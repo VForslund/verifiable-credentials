@@ -1,0 +1,280 @@
+<!-- Explainer -->
+<div class="mb-8 rounded-xl bg-linear-to-br from-purple-50 to-fuchsia-50 p-6 border border-purple-200">
+  <div class="flex items-center gap-3 mb-3">
+    <div class="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+    </div>
+    <h2 class="text-2xl font-bold text-purple-900">Step 1 — The Holder / Wallet</h2>
+  </div>
+
+  <p class="text-purple-800 mb-4">
+    Your <strong>Wallet</strong> stores all your credentials. When someone asks for proof, you pick
+    which credentials to share, sign the response with your personal key, and send it — nobody
+    can impersonate you.
+  </p>
+
+  <div class="space-y-2">
+    <details class="bg-white/60 rounded-lg border border-purple-100">
+      <summary class="p-4 cursor-pointer font-semibold text-purple-900 hover:text-purple-700 select-none">
+        📋 What happens when someone asks for your data?
+      </summary>
+      <div class="px-4 pb-4">
+        <p class="text-sm text-purple-700 mb-3">
+          Think of it like showing your ID at a bar. You don't hand the bouncer your passport for keeps —
+          you flash it, they check it, and you put it away. A digital wallet works the same way.
+        </p>
+        <div class="space-y-2 text-sm text-purple-700">
+          <div class="flex gap-2">
+            <span class="text-purple-400 mt-0.5">💼</span>
+            <div><strong>Your credentials live here</strong> — every credential you've collected (university degree, government ID, medical records) is stored locally in your wallet.</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-purple-400 mt-0.5">📨</span>
+            <div><strong>Someone asks for proof</strong> — a bar, employer, or app sends a request like "prove you're over 21". You see exactly what they want before anything is shared.</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-purple-400 mt-0.5">🎯</span>
+            <div><strong>You pick which credentials to share</strong> — only the ones relevant to the request go in. Everything else stays in the wallet.</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-purple-400 mt-0.5">✍️</span>
+            <div><strong>You sign and send</strong> — the wallet bundles your chosen credentials into a <a href="https://www.w3.org/TR/vc-data-model-2.0/#verifiable-presentations" target="_blank" class="underline">presentation</a> and signs it with your personal key. That signature proves the verifier is talking to you, so a stolen credential alone is useless.</div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="bg-white/60 rounded-lg border border-purple-100">
+      <summary class="p-4 cursor-pointer font-semibold text-purple-900 hover:text-purple-700 select-none">
+        🔗 Why this matters for Truecaller
+      </summary>
+      <div class="px-4 pb-4">
+        <ul class="text-sm text-purple-700 space-y-1 list-disc list-inside">
+          <li><strong>Branding &amp; Trust</strong> — By acting as a credential wallet, Truecaller positions itself as a company that takes user security and privacy seriously.</li>
+          <li><strong>Monetization</strong> — Truecaller can sell ads or choose to provide a quality service to win the trust of users much like googles authentication phone application.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- DID Setup -->
+@if (!state.holderDid()) {
+  <div class="mb-6 p-5 bg-amber-50 border-2 border-amber-300 rounded-xl">
+    <h3 class="font-bold text-amber-900 mb-2">🔑 Create Your DID</h3>
+    <p class="text-sm text-amber-800 mb-3">
+      First, you need a <strong>DID</strong> (Decentralized Identifier). It's like a username that
+      <em>you</em> own and control — no company or government holds the keys.
+      It comes with a private key only you hold, so you can prove "this is really me"
+      without relying on any central authority.
+    </p>
+    <button (click)="setupHolder()"
+      class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-medium text-sm">
+      🔑 Generate My DID
+    </button>
+  </div>
+} @else {
+  <div class="mb-6 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+    <span class="text-green-600">✓</span>
+    <p class="text-xs font-mono text-green-800">Your DID: {{ state.holderDid() }}</p>
+  </div>
+}
+
+<!-- Incoming Verification Request -->
+@if (state.pendingVerificationRequest()) {
+  <div class="mb-6 rounded-xl border-2 border-amber-400 bg-amber-50 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="text-3xl">{{ state.pendingVerificationRequest()!.scenarioIcon }}</span>
+      <div>
+        <h3 class="font-bold text-amber-900">📨 Incoming Proof Request</h3>
+        <p class="text-sm text-amber-700">{{ state.pendingVerificationRequest()!.scenarioName }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg p-4 mb-4">
+      <h4 class="text-sm font-semibold text-gray-700 mb-2">The verifier is asking you to prove:</h4>
+      <div class="space-y-2">
+        @for (item of state.pendingVerificationRequest()!.proofRequest; track item.field) {
+          <div class="p-2 bg-gray-50 rounded-lg">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-sm">🔍</span>
+                <code class="text-sm font-mono text-gray-800">{{ item.field }}</code>
+                <span class="text-sm font-bold text-gray-500">{{ operatorLabel(item.operator) }}</span>
+                @if (item.value) {
+                  <code class="text-sm font-mono text-blue-700">{{ item.value }}</code>
+                }
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                👁️ Shared with verifier
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+        <p class="text-xs text-green-900">
+          <strong>🔒 Privacy protection:</strong>
+          Only the fields listed above are shared. All other fields on the credential
+          (name, personal number, etc.) remain <strong>cryptographically hidden</strong> — the verifier
+          never sees them, but the issuer's signature still covers everything.
+        </p>
+        @if (storedMechanisms.size > 0) {
+          <p class="text-[10px] text-green-700 mt-1">
+            Securing mechanisms in use:
+            @if (storedMechanisms.has('sd-jwt-vc')) {
+              <strong>SD-JWT</strong> (selective disclosure via hashed claims)
+            }
+            @if (storedMechanisms.has('bbs-2023')) {
+              @if (storedMechanisms.has('sd-jwt-vc')) { · }
+              <strong>BBS</strong> (zero-knowledge derived proofs)
+            }
+            @if (storedMechanisms.has('eddsa-jcs-2022')) {
+              @if (storedMechanisms.has('sd-jwt-vc') || storedMechanisms.has('bbs-2023')) { · }
+              <strong>EdDSA</strong> (full credential with digital signature)
+            }
+          </p>
+        }
+      </div>
+    </div>
+
+    <!-- Preview the actual VP that will be sent -->
+    @if (!vpPreview()) {
+      <button (click)="generatePreview()"
+        [disabled]="previewLoading()"
+        class="w-full mb-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm border border-gray-300">
+        @if (previewLoading()) {
+          ⏳ Generating preview...
+        } @else {
+          👁️ Preview exact data the verifier will receive
+        }
+      </button>
+    }
+
+    @if (vpPreview()) {
+      <div class="mb-4 rounded-lg border border-gray-300 overflow-hidden">
+        <div class="bg-gray-100 px-4 py-2 flex items-center justify-between">
+          <span class="text-xs font-semibold text-gray-700">📄 Exact Verifiable Presentation payload</span>
+          <span class="text-xs text-gray-500">W3C VC Data Model v2.0</span>
+        </div>
+        <pre class="bg-gray-900 text-green-400 p-4 overflow-x-auto text-xs leading-relaxed max-h-80 overflow-y-auto">{{ vpPreview() | json }}</pre>
+      </div>
+    }
+
+    <div class="flex gap-3">
+      <button (click)="approveAndSend()"
+        [disabled]="loading()"
+        class="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-300 transition font-medium">
+        @if (loading()) {
+          ⏳ Sending...
+        } @else {
+          ✅ Approve &amp; Send to Verifier
+        }
+      </button>
+      <button (click)="denyRequest()"
+        class="px-4 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium">
+        ❌ Deny
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Stored Credentials -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <h3 class="text-lg font-semibold text-gray-900 mb-4">
+    Your Credentials
+    @if (state.storedCredentials().length > 0) {
+      <span class="text-sm font-normal text-gray-400 ml-2">({{ state.storedCredentials().length }})</span>
+    }
+  </h3>
+
+  @if (state.storedCredentials().length === 0) {
+    <div class="text-center py-12 text-gray-400">
+      <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+      <p class="text-lg font-medium">No credentials yet</p>
+      <p class="text-sm mt-1">Go to the <strong>Issuer</strong> tab to collect credentials from organizations.</p>
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (vc of state.storedCredentials(); track decode(vc).id) {
+        @let d = decode(vc);
+        <div class="border border-purple-200 rounded-lg overflow-hidden">
+          <div class="bg-purple-50 px-4 py-3 flex items-center justify-between">
+            <div>
+              <span class="text-sm font-semibold text-purple-900">{{ d.issuerDisplayName || d.issuerDid }}</span>
+              <span class="text-xs text-purple-500 ml-1 font-mono" title="{{ d.issuerDid }}">· {{ d.issuerDid | slice:0:24 }}…</span>
+              <span class="text-xs text-purple-400 ml-2">· {{ d.validFrom }}</span>
+            </div>
+            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">{{ d.type }}</span>
+          </div>
+          <div class="px-4 py-2 text-xs text-gray-600 space-y-0.5">
+            @for (entry of getClaimEntries(d.subjectPreview); track entry[0]) {
+              <div><span class="font-medium text-gray-700">{{ entry[0] }}:</span> {{ entry[1] }}</div>
+            }
+          </div>
+          <div class="px-4 py-1 text-[10px] text-purple-600 border-t border-purple-100">
+            secured by <code>{{ d.securingMechanism }}</code>
+            @if (d.sdFieldNames.length) {
+              · {{ d.sdFieldNames.length }} disclosable fields
+            }
+          </div>
+          <div class="px-4 py-2 border-t border-purple-100 space-y-1">
+            <details>
+              <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">📄 View raw VC JSON</summary>
+              <pre class="bg-gray-900 text-green-400 p-3 rounded-lg overflow-x-auto text-xs mt-2 leading-relaxed">{{ vc.verifiableCredential | json }}</pre>
+            </details>
+            @if (d.securingMechanism === 'sd-jwt-vc') {
+              <details>
+                <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">🔓 View decoded SD-JWT contents</summary>
+                <div class="mt-2 space-y-2">
+                  @if (decodeEnvelope(vc.verifiableCredential); as env) {
+                    <div>
+                      <span class="text-[10px] font-semibold text-gray-500 uppercase">JWT Header</span>
+                      <pre class="bg-gray-900 text-blue-300 p-3 rounded-lg overflow-x-auto text-xs leading-relaxed">{{ env.header | json }}</pre>
+                    </div>
+                    <div>
+                      <span class="text-[10px] font-semibold text-gray-500 uppercase">JWT Payload (claims)</span>
+                      <pre class="bg-gray-900 text-green-400 p-3 rounded-lg overflow-x-auto text-xs leading-relaxed">{{ env.payload | json }}</pre>
+                    </div>
+                    @if (env.disclosures.length > 0) {
+                      <div>
+                        <span class="text-[10px] font-semibold text-gray-500 uppercase">Disclosures ({{ env.disclosures.length }})</span>
+                        @for (disc of env.disclosures; track $index) {
+                          <pre class="bg-gray-900 text-yellow-300 p-2 rounded-lg overflow-x-auto text-xs leading-relaxed mt-1">{{ disc | json }}</pre>
+                        }
+                      </div>
+                    }
+                  } @else {
+                    <p class="text-xs text-red-500">Unable to decode SD-JWT envelope.</p>
+                  }
+                </div>
+              </details>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Last generated VP -->
+@if (state.generatedPresentation()) {
+  <div class="mt-6 bg-white rounded-xl shadow-sm border border-emerald-200 p-6">
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-sm font-semibold text-emerald-800">📤 Last Shared Presentation</h4>
+      <button (click)="goToVerifier()" class="text-sm px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition">
+        ✅ View Verification →
+      </button>
+    </div>
+    <p class="text-xs text-gray-500 mb-2">
+      The presentation contains your credentials with only the requested fields revealed.
+      Hidden fields never left your wallet — the verifier can't see them.
+    </p>
+    <details>
+      <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">View raw presentation JSON</summary>
+      <pre class="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-xs leading-relaxed mt-2">{{ state.generatedPresentation() | json }}</pre>
+    </details>
+  </div>
+}
+

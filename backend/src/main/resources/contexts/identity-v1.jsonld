@@ -1,0 +1,29 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "id": "@id",
+    "type": "@type",
+    "demo": "https://truecaller.demo/contexts/identity/v1#",
+    "GovernmentIdentityCredential": "demo:GovernmentIdentityCredential",
+    "UniversityDegreeCredential":   "demo:UniversityDegreeCredential",
+    "MedicalRecordCredential":      "demo:MedicalRecordCredential",
+    "VerifiedPhoneCredential":      "demo:VerifiedPhoneCredential",
+    "fullName":         { "@id": "demo:fullName",         "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "dateOfBirth":      { "@id": "demo:dateOfBirth",      "@type": "https://www.w3.org/2001/XMLSchema#date" },
+    "personalNumber":   { "@id": "demo:personalNumber",   "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "nationality":      { "@id": "demo:nationality",      "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "studentName":      { "@id": "demo:studentName",      "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "degree":           { "@id": "demo:degree",           "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "fieldOfStudy":     { "@id": "demo:fieldOfStudy",     "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "graduationYear":   { "@id": "demo:graduationYear",   "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "patientName":      { "@id": "demo:patientName",      "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "height":           { "@id": "demo:height",           "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "weight":           { "@id": "demo:weight",           "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "bloodType":        { "@id": "demo:bloodType",        "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "subscriberName":   { "@id": "demo:subscriberName",   "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "phoneNumber":      { "@id": "demo:phoneNumber",      "@type": "https://www.w3.org/2001/XMLSchema#string" },
+    "verifiedSince":    { "@id": "demo:verifiedSince",    "@type": "https://www.w3.org/2001/XMLSchema#string" }
+  }
+}
+

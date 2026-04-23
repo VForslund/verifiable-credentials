@@ -1,0 +1,240 @@
+<!-- Explainer -->
+<div class="mb-8 rounded-xl bg-linear-to-br from-emerald-50 to-teal-50 p-6 border border-emerald-200">
+  <div class="flex items-center gap-3 mb-3">
+    <div class="w-10 h-10 rounded-lg bg-emerald-600 flex items-center justify-center">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <h2 class="text-2xl font-bold text-emerald-900">Step 3 — The Verifier</h2>
+  </div>
+
+  <p class="text-emerald-800 mb-4">
+    A <strong>Verifier</strong> receives a presentation and checks whether it's genuine —
+    <strong>no callback to the issuer, no API keys, no third-party service</strong>. Everything is
+    checked locally with math.
+  </p>
+
+  <div class="space-y-2">
+    <details class="bg-white/60 rounded-lg border border-emerald-100">
+      <summary class="p-4 cursor-pointer font-semibold text-emerald-900 hover:text-emerald-700 select-none">
+        📋 What does verification actually check?
+      </summary>
+      <div class="px-4 pb-4">
+        <p class="text-sm text-emerald-700 mb-3">
+          Imagine someone hands you an ID card. You'd ask: is it real? Is it theirs? Is it still valid?
+          That's exactly what happens here — but the bouncer is a piece of code, and the hologram is replaced by a signature.
+        </p>
+        <div class="space-y-2 text-sm text-emerald-700">
+          <div class="flex gap-2">
+            <span class="text-emerald-400 mt-0.5">📐</span>
+            <div><strong>Is it shaped right?</strong> — the presentation has to follow the standard format. Anything malformed is rejected immediately.</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-emerald-400 mt-0.5">🔐</span>
+            <div><strong>Is the issuer's signature genuine?</strong> — the verifier re-checks the math on the issuer's signature. If anyone changed even one character of the credential, the signature breaks and the credential is rejected.</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-emerald-400 mt-0.5">👤</span>
+            <div><strong>Is the presenter the real holder?</strong> — the presentation also carries the holder's own signature. Without it, a stolen credential is useless.</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-emerald-400 mt-0.5">📅</span>
+            <div><strong>Is it still valid?</strong> — the verifier checks the issue and expiry dates. Expired credentials are rejected, just like an expired passport.</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-emerald-400 mt-0.5">✅</span>
+            <div><strong>Does it answer the question?</strong> — finally, the verifier checks the actual claim it cares about (e.g. "age ≥ 21").</div>
+          </div>
+        </div>
+        <p class="text-xs text-emerald-700 mt-3">
+          All of this happens locally. See the <a href="https://www.w3.org/TR/vc-data-model-2.0/#verifiable-presentations" target="_blank" class="underline">spec</a> for the full data model.
+        </p>
+      </div>
+    </details>
+
+    <details class="bg-white/60 rounded-lg border border-emerald-100">
+      <summary class="p-4 cursor-pointer font-semibold text-emerald-900 hover:text-emerald-700 select-none">
+        🔗 Why this matters for Truecaller
+      </summary>
+      <div class="px-4 pb-4">
+        <ul class="text-sm text-emerald-700 space-y-1 list-disc list-inside">
+          <li><strong>No cost</strong> — When onboarding Truecaller may check for a presentation to onboard users, skipping OTP costs entirely</li>
+          <li><strong>Better UX</strong> — Instead of waiting for an SMS, users can just share a credential they already have in their wallet. Hopefully resulting in more user growth</li>
+          <li><strong>Scalability</strong> — Since credentials are self-contained we are not at the mercy of providers being able to scale.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- Scenario Selection -->
+<h3 class="text-lg font-semibold text-gray-900 mb-4">Choose a Verification Scenario</h3>
+
+@if (!state.storedCredentials().length) {
+  <div class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+    <p class="text-sm text-amber-800">
+      ⚠️ The holder has no credentials in their wallet yet. Go to the <strong>Issuer</strong> tab to collect some first.
+    </p>
+  </div>
+}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+  @for (scenario of scenarios; track scenario.key) {
+    <button (click)="selectScenario(scenario)"
+      class="text-left rounded-xl border-2 p-4 transition-all"
+      [class]="selectedScenario()?.key === scenario.key
+        ? scenario.bgColor + ' border-current shadow-lg'
+        : 'bg-white border-gray-200 hover:border-gray-300'">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl mt-0.5">{{ scenario.icon }}</span>
+        <div>
+          <h4 class="font-bold text-sm" [class]="scenario.color">{{ scenario.name }}</h4>
+          <p class="text-xs text-gray-600 mt-1">{{ scenario.description }}</p>
+          <div class="mt-2 flex flex-wrap gap-1">
+            @for (cred of scenario.requiredCredentials; track cred) {
+              <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">{{ cred }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    </button>
+  }
+</div>
+
+<!-- Selected Scenario Detail -->
+@if (selectedScenario()) {
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="text-3xl">{{ selectedScenario()!.icon }}</span>
+      <div>
+        <h3 class="text-lg font-bold text-gray-900">{{ selectedScenario()!.name }}</h3>
+        <p class="text-sm text-gray-500">The verifier will check these assertions against the VP:</p>
+      </div>
+    </div>
+
+    <!-- Assertions Preview -->
+    <div class="mb-4 space-y-2">
+      @for (a of selectedScenario()!.assertions; track a.field) {
+        <div class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+          <span class="text-lg">🔍</span>
+          <code class="text-sm font-mono text-gray-800">{{ a.field }}</code>
+          <span class="text-sm font-bold text-gray-600">{{ operatorLabel(a.operator) }}</span>
+          @if (a.value) {
+            <code class="text-sm font-mono text-blue-700">{{ a.value }}</code>
+          }
+        </div>
+      }
+    </div>
+
+    <button (click)="sendProofRequest()"
+      [disabled]="!state.storedCredentials().length"
+      class="w-full px-4 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition font-medium mb-3">
+      📨 Send Proof Request to Wallet
+    </button>
+
+    @if (state.generatedPresentation() && selectedScenario()) {
+      <details class="mb-4">
+        <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">View received VP payload</summary>
+        <pre class="bg-gray-900 text-green-400 p-3 rounded-lg overflow-x-auto text-xs mt-2 leading-relaxed">{{ state.generatedPresentation() | json }}</pre>
+      </details>
+
+      <button (click)="verify()"
+        [disabled]="loading()"
+        class="w-full px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition font-medium">
+        @if (loading()) {
+          ⏳ Verifying...
+        } @else {
+          🔍 Verify the Presentation
+        }
+      </button>
+    }
+
+    <!-- Results -->
+    @if (report()) {
+      <div class="mt-6">
+        @if (report()!.valid) {
+          <div class="p-4 bg-green-100 border border-green-300 rounded-lg mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">✅</span>
+              <div>
+                <h4 class="font-bold text-green-900">Verification Passed</h4>
+                <p class="text-sm text-green-700">All signatures are valid and the credential answers the request.</p>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="p-4 bg-red-100 border border-red-300 rounded-lg mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">❌</span>
+              <div>
+                <h4 class="font-bold text-red-900">Verification Failed</h4>
+                <p class="text-sm text-red-700">One or more checks did not pass. See details below.</p>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Assertion Results -->
+        @if (report()!.assertionResults && report()!.assertionResults.length > 0) {
+          <div class="mb-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-2">Assertion Results</h4>
+            <div class="space-y-2">
+              @for (ar of report()!.assertionResults; track ar.field) {
+                <div class="flex items-start gap-2 p-3 rounded-lg"
+                  [class]="ar.passed ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
+                  <span class="mt-0.5">{{ ar.passed ? '✅' : '❌' }}</span>
+                  <div>
+                    <p class="text-sm font-medium" [class]="ar.passed ? 'text-green-800' : 'text-red-800'">
+                      <code class="font-mono">{{ ar.field }}</code>
+                      <span class="font-bold mx-1">{{ operatorLabel(ar.operator) }}</span>
+                      @if (ar.expected) {
+                        <code class="font-mono text-blue-700">{{ ar.expected }}</code>
+                      }
+                    </p>
+                    @if (ar.source) {
+                      <p class="text-xs text-gray-500 mt-0.5">Evaluated against: {{ ar.source }}</p>
+                    }
+                    @if (!ar.passed && ar.reason) {
+                      <p class="text-xs text-red-600 mt-0.5">{{ ar.reason }}</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Crypto Checks -->
+        @if (report()!.checks.length > 0) {
+          <details class="mb-3">
+            <summary class="text-sm font-semibold text-gray-700 cursor-pointer hover:text-gray-900">
+              ✓ {{ report()!.checks.length }} checks passed
+            </summary>
+            <ul class="mt-2 space-y-1">
+              @for (check of report()!.checks; track check) {
+                <li class="flex items-start gap-2 text-xs text-green-700">
+                  <span class="mt-0.5">✅</span><span>{{ check }}</span>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+
+        @if (report()!.errors.length > 0) {
+          <details open>
+            <summary class="text-sm font-semibold text-gray-700 cursor-pointer hover:text-gray-900">
+              ✗ {{ report()!.errors.length }} issues found
+            </summary>
+            <ul class="mt-2 space-y-1">
+              @for (err of report()!.errors; track err) {
+                <li class="flex items-start gap-2 text-xs text-red-700">
+                  <span class="mt-0.5">❌</span><span>{{ err }}</span>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </div>
+    }
+  </div>
+}
+

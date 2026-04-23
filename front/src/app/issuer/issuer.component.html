@@ -1,0 +1,173 @@
+<!-- Explainer -->
+<div class="mb-8 rounded-xl bg-linear-to-br from-blue-50 to-indigo-50 p-6 border border-blue-200">
+  <div class="flex items-center gap-3 mb-3">
+    <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+    </div>
+    <h2 class="text-2xl font-bold text-blue-900">Step 2 — The Issuer</h2>
+  </div>
+
+  <p class="text-blue-800 mb-4">
+    An <strong>Issuer</strong> is a trusted organisation (university, government, telecom…) that creates a
+    <strong>digital credential</strong> about you, signs it so it can't be forged, and delivers it to your wallet.
+  </p>
+
+  <div class="space-y-2">
+    <details class="bg-white/60 rounded-lg border border-blue-100">
+      <summary class="p-4 cursor-pointer font-semibold text-blue-900 hover:text-blue-700 select-none">
+        📋 What's inside a Verifiable Credential?
+      </summary>
+      <div class="px-4 pb-4">
+        <p class="text-sm text-blue-700 mb-3">
+          Think of it like a digital version of a physical ID card — but one that's impossible to forge,
+          because it's signed with cryptography.
+        </p>
+        <div class="space-y-2 text-sm text-blue-700">
+          <div class="flex gap-2">
+            <span class="text-blue-400 mt-0.5">🏷️</span>
+            <div><strong>Who issued it</strong> — the organisation's digital identity, like a tamper-proof stamp from the university, government, or telecom</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-blue-400 mt-0.5">👤</span>
+            <div><strong>Who it's about</strong> — the facts about you (name, degree, date of birth, phone number, etc.)</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-blue-400 mt-0.5">📅</span>
+            <div><strong>When it's valid</strong> — an issue date and an expiry date, just like the dates printed on a passport</div>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-blue-400 mt-0.5">🔐</span>
+            <div><strong>A digital signature</strong> — a tiny piece of math covering the whole credential. Change a single character anywhere and the signature breaks instantly, so nobody can edit a credential without being caught.</div>
+          </div>
+        </div>
+        <p class="text-xs text-blue-700 mt-3">
+          Everything follows the open <a href="https://www.w3.org/TR/vc-data-model-2.0/#verifiable-credentials" target="_blank" class="underline">W3C Verifiable Credentials standard</a>,
+          so any verifier in the world can check the signature without having to call us.
+        </p>
+      </div>
+    </details>
+
+    <details class="bg-white/60 rounded-lg border border-blue-100">
+      <summary class="p-4 cursor-pointer font-semibold text-blue-900 hover:text-blue-700 select-none">
+        🔗 Why this matters for Truecaller
+      </summary>
+      <div class="px-4 pb-4">
+        <ul class="text-sm text-blue-700 space-y-1 list-disc list-inside">
+          <li><strong>Telecoms as issuers</strong> — Telia, Airtel, or any operator issues a <em>VerifiedPhoneCredential</em> proving phone number. Truecaller could skip the OTP costs</li>
+          <li><strong>No API dependency</strong> — credentials are self-contained and cryptographically verifiable. Truecaller doesn't need to maintain partnerships or API integrations with every otp provider worldwide.</li>
+          <li><strong>Truecaller as issuer</strong> — Truecaller could itself issue <em>Verified Business Caller</em> credentials to enterprise customers, making their identity portable beyond the Truecaller app.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- How this demo works -->
+<div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+  <p class="text-sm text-gray-600">
+    <strong>How this demo works:</strong> Pick an issuer below. You're simulated as already signed in
+    (BankID, university SSO, etc.). The issuer fills in the credential, signs it, and drops it into your wallet.
+  </p>
+</div>
+
+<!-- Setup Keys -->
+@if (!state.holderDid()) {
+  <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+    <p class="text-sm text-amber-800 mb-2">You need to create your DID first before collecting credentials.</p>
+    <button (click)="goToWallet()"
+      class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm">
+      💼 Go to Wallet to create DID
+    </button>
+  </div>
+} @else {
+  <div class="mb-6 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+    <span class="text-green-600">✓</span>
+    <p class="text-xs font-mono text-green-800">Your DID: {{ state.holderDid() }}</p>
+  </div>
+}
+
+<!-- Issuer Portals Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  @for (portal of portals; track portal.key) {
+    <div class="rounded-xl border-2 overflow-hidden transition-all"
+      [class]="selectedPortal()?.key === portal.key
+        ? portal.borderColor + ' shadow-lg'
+        : 'border-gray-200 hover:border-gray-300'">
+
+      <button (click)="selectPortal(portal)" class="w-full text-left p-4" [class]="portal.bgColor">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">{{ portal.icon }}</span>
+          <div>
+            <h3 class="font-bold" [class]="portal.color">{{ portal.name }}</h3>
+            <p class="text-xs text-gray-600 mt-0.5">{{ portal.description }}</p>
+            <span class="mt-1 inline-block text-[10px] px-2 py-0.5 rounded-full font-mono"
+              [class]="portal.defaultMechanism === 'bbs-2023' ? 'bg-emerald-100 text-emerald-800'
+                      : portal.defaultMechanism === 'eddsa-jcs-2022' ? 'bg-blue-100 text-blue-800'
+                      : 'bg-orange-100 text-orange-800'">
+              🔐 {{ portal.defaultMechanism }}
+            </span>
+          </div>
+        </div>
+      </button>
+
+      @if (selectedPortal()?.key === portal.key) {
+        <div class="p-4 bg-white border-t" [class]="portal.borderColor">
+          <div class="flex items-center gap-2 mb-3 text-xs text-gray-500">
+            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            Logged in as Alice Johnson
+          </div>
+
+          <div class="space-y-3">
+            @for (field of portal.fields; track field.key) {
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ field.label }}</label>
+                <input type="text" [value]="getClaimValue(field.key, field.prefill)"
+                  (input)="setClaim(field.key, $any($event.target).value)"
+                  class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            }
+          </div>
+
+          <button (click)="issueFromPortal(portal)" [disabled]="!state.holderDid() || issuing()"
+            class="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition font-medium text-sm">
+            @if (issuing()) {
+              ⏳ Issuing...
+            } @else {
+              📜 Issue Credential &amp; Save to Wallet
+            }
+          </button>
+
+          @if (lastIssuedVc() && lastIssuedPortal() === portal.key) {
+            <div class="mt-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-green-600">✅</span>
+                <span class="text-sm font-semibold text-green-800">Credential issued and saved to wallet!</span>
+              </div>
+              <details>
+                <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">View raw VC JSON (W3C v2.0)</summary>
+                <pre class="bg-gray-900 text-green-400 p-3 rounded-lg overflow-x-auto text-xs mt-2 leading-relaxed">{{ lastIssuedVc().verifiableCredential | json }}</pre>
+              </details>
+              <details class="mt-2">
+                <summary class="text-xs text-gray-400 cursor-pointer hover:text-gray-600">View _walletHints (non-normative)</summary>
+                <pre class="bg-gray-100 text-gray-700 p-3 rounded-lg overflow-x-auto text-xs mt-2 leading-relaxed">{{ lastIssuedVc()._walletHints | json }}</pre>
+              </details>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Navigation hint -->
+@if (state.storedCredentials().length > 0) {
+  <div class="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-between">
+    <p class="text-sm text-purple-800">
+      <strong>{{ state.storedCredentials().length }}</strong> credential(s) in your wallet. Ready to present them to a verifier?
+    </p>
+    <button (click)="goToWallet()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm">
+      💼 Open Wallet →
+    </button>
+  </div>
+}
+
